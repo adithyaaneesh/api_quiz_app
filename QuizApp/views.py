@@ -39,3 +39,8 @@ def create_quiz(request):
     return Response({"message": "All quizzes created successfully"})
 
 
+# delete a quiz
+@api_view(['DELETE'])
+def delete_all_quizzes(request):
+    Quiz.objects.all().delete()
+    return Response({"message": "All quizzes deleted successfully"})
