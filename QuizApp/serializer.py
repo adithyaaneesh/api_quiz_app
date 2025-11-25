@@ -10,4 +10,4 @@ class QuizSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True, read_only=True)
     class Meta:
         model = Quiz
-        fields = [ 'id', 'questions', 'option' ]
+        fields = [ 'id', 'question', 'options' ]
