@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializer import QuizSerializer 
-from .models import Quiz, Option
+from .models import Quiz
 # Create your views here.
 
 # get quiz
@@ -15,32 +15,29 @@ def get_quiz(request):
 
 @api_view(['POST'])
 def create_quiz(request):
-    quizzes = request.data
-    
-    if not isinstance(quizzes, list):
-        return Response({"error": "Input must be a list of quizzes"})
-
-    for quiz_data in quizzes:
-        question = quiz_data.get("question")
-        options = quiz_data.get("options", [])
-
-        if not question:
-            return Response({"error": "Question Required"})
-
-        quiz = Quiz.objects.create(question=question)
-
-        for opt in options:
-            Option.objects.create(
-                quiz=quiz,
-                text=opt.get("text", ""),
-                is_correct=opt.get("is_correct", False)
-            )
-
-    return Response({"message": "All quizzes created successfully"})
-
+    is_many = isinstance(request.data, list)
+    serializer = QuizSerializer(data =request.data, many = is_many)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
 
 # delete a quiz
 @api_view(['DELETE'])
 def delete_all_quizzes(request):
     Quiz.objects.all().delete()
     return Response({"message": "All quizzes deleted successfully"})
+
+def delete_quiz(request, id):
+    quiz = get_object_or_404(Quiz,id=id)
+    quiz.delete()
+    return Response({"message": "Quiz deleted successfully"})
+
+@api_view(['PUT'])
+def update_quiz(request, id):
+    quiz = Quiz.objects.get(id=id)
+    serializer = QuizSerializer(instance=quiz, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
